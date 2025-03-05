@@ -1,0 +1,93 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  height: 100vh;
+  width: 100vw;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.notice-jan {
+  background-color: #F13B3B;
+  color: #491414;
+}
+
+.notice-feb {
+  background-color: #913A93;
+  color: #2F0B30;
+}
+
+.notice-mar {
+  background-color: #6AA4DC;
+  color: #122B53;
+}
+
+.notice-apr {
+  background-color: #C0C0C0;
+  color: #272727;
+}
+
+.notice-may {
+  background-color: #44B14F;
+  color: #143A0A;
+}
+
+.notice-jun {
+  background-color: #598C74;
+  color: #182B22;
+}
+
+.notice-jul {
+  background-color: #9B111E;
+  color: #370A0F;
+}
+.notice-aug {
+  background-color: #647337;
+  color: #232D08;
+}
+
+.notice-sep {
+  background-color: #0F52BA;
+  color: #05142C;
+}
+
+.notice-oct {
+  background-color: #1CDFA8;
+  color: #0F392D;
+}
+
+.notice-nov {
+  background-color: #E4D00A;
+  color: #393403;
+}
+
+.notice-dec {
+  background-color: #72B7D9;
+  color: #092330;
+}
+.collapsible-div {
+  transition: max-height 0.3s ease;
+  overflow: hidden;
+}
+.collapse-div{
+  cursor:pointer;
+  margin-right:"5px";
+  }
+  .modal-body-attendance p{
+    margin-bottom: 15px;
+  }
+
+.selectedchat{  
+  background-color: #d6e3e9;
+  /* padding: 10px; */
+}

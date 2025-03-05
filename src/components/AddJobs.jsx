@@ -1,0 +1,456 @@
+import {
+    Checkbox,
+    Container,
+    FormControlLabel,
+    IconButton,
+    MenuItem,
+    Select,
+    TextField as MuiTextField,
+    Toolbar,
+} from '@mui/material';
+import { Box, Button, Grid, Typography } from '@mui/material';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Form, Submit, useForm } from '../hooks/useForm/useForm';
+import { Input } from '../hooks/useForm/inputs/index';
+
+import axios from 'axios';
+
+import CloseIcon from '@mui/icons-material/Close';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import useErrorHandler from '../hooks/useErrorHandler';
+import Loading from './Loading';
+import { useMessage } from './Header';
+
+
+function AddJob({ refresh, handleClose, selectedJob, setSelectedJob }) {
+    const { id = null, action = null } = selectedJob;
+    const [details, setDetails] = useState([]);
+    const [loading, setLoading] = useState(Boolean(id));
+    const [departments, setDepartments] = useState({});
+    const { showError, showSuccess } = useMessage();
+    const errorHandler = useErrorHandler();
+
+    const TextField = props => {
+        console.log('TextField Redering');
+        return <MuiTextField {...props} />;
+    };
+
+    const handlers = useForm(
+        useMemo(
+            () => ({
+                title: {
+                    required: true,
+                },
+                department: {
+                    required: true,
+                },
+                experience: {
+                    required: true,
+                },
+                location: {
+                    required: true,
+                },
+                salary: {
+                    required: true,
+                },
+                currency: {
+                    required: true,
+                },
+                jobType: {
+                    required: true,
+                    value: 'Part Time',
+                },
+                remote: {
+                    required: true,
+                    value: 'true',
+                },
+            }),
+            []
+        ),
+        { Input: TextField }
+    );
+    const setValues = handlers.setValues;
+    const errors = handlers.errors;
+
+    const fetchJob = useCallback(
+        async id => {
+            setLoading(true);
+            try {
+                const response = await axios.get(`/hr/job-listing/${id}`);
+                const job = response.data.job;
+                const {
+                    title,
+                    department,
+                    experience,
+                    location,
+                    salary,
+                    jobType,
+                    remote,
+                    details,
+                } = job;
+
+                setValues({
+                    title,
+                    department,
+                    experience,
+                    location,
+                    salary: salary.amount,
+                    currency: salary.currency,
+                    jobType,
+                    remote,
+                });
+                setDetails(details);
+            } catch (e) {
+                errorHandler(e);
+            } finally {
+                setLoading(false);
+            }
+        },
+        [setValues, errorHandler]
+    );
+
+    const addNewDetail = () => {
+        const newDetails = [
+            ...details,
+            {
+                content: '',
+                tag: 'h4',
+            },
+        ];
+        setDetails(newDetails);
+    };
+
+    const removeDetail = (d, i) => {
+        details.splice(i, 1);
+        setDetails([...details]);
+    };
+
+    const copyDetail = (detail, i) => {
+        if (detail._id) delete detail._id;
+
+        const newDetail = {
+            content: detail.content,
+            tag: detail.tag,
+        };
+
+        details.splice(++i, 0, newDetail);
+
+        setDetails([...details]);
+    };
+
+    console.log(details);
+
+    const handleContentChange = (e, i) => {
+        const newValue = e.target.value;
+        let tempDetails = [...details]
+        tempDetails[i].content = newValue;
+        setDetails(tempDetails);
+    };
+
+    const handleTagChange = (e, i) => {
+        const newTag = e.target.value;
+        details[i].tag = newTag;
+        setDetails([...details]);
+    };
+
+    const customChangeHandler = e => {
+        const { name, value } = e.target;
+        handlers.setValues({ [name]: value });
+    };
+
+    const onSubmit = res => {
+        const { message, success } = res.data;
+
+        if (success) {
+            handleClose();
+            setSelectedJob({});
+            showSuccess(action === 'edit' ? 'Job Updated Successfully' : 'Job Added Successfully');
+            return refresh();
+        }
+
+        showError(message);
+    };
+
+    const getDepartments = useCallback(async () => {
+        try {
+            const response = await axios.get(`/hr/department`);
+            const departments = response.data.departments;
+
+            const format = {};
+
+            departments.forEach(department => (format[department._id] = department.name));
+
+            setDepartments(format);
+        } catch (e) {
+            errorHandler(e);
+        }
+    }, [errorHandler]);
+
+    useEffect(() => {
+        getDepartments();
+    }, [getDepartments]);
+
+    useEffect(() => {
+        if (id) {
+            fetchJob(id);
+        }
+    }, [id, fetchJob]);
+
+    return (
+        <Box
+            sx={{
+                width: '100%',
+                bgcolor: 'background.paper',
+                border: '2px solid #000',
+                boxShadow: 24,
+            }}>
+            <Toolbar>
+                <IconButton
+                    edge='start'
+                    color='inherit'
+                    onClick={() => {
+                        handleClose();
+                        setSelectedJob({});
+                    }}
+                    aria-label='close'>
+                    <CloseIcon />
+                </IconButton>
+            </Toolbar>
+            <Container>
+                <Box p={2}>
+                    <Typography id='modal-modal-title' variant='h2' component='h2'>
+                        {action === 'edit'
+                            ? 'Edit question for listing'
+                            : 'Add question job for listing'}
+                    </Typography>
+                    <hr color='#E5E5E5' />
+                    {loading ? (
+                        <Loading message='Please wait, while your job is loading...' />
+                    ) : (
+                        <Form
+                            handlers={handlers}
+                            onSubmit={onSubmit}
+                            final={values => ({
+                                ...values,
+                                salary: {
+                                    amount: values.salary,
+                                    currency: values.currency,
+                                },
+                                details,
+                            })}
+                            action={action === 'edit' ? `/hr/job-listing/${id}` : '/hr/job-listing'}
+                            method={action === 'edit' ? 'patch' : 'post'}
+                            onError={console.log}>
+                            <Grid container spacing={1}>
+                                <Grid item lg={12} mb={1}>
+                                    <Typography variant='h6'>Title</Typography>
+                                </Grid>
+                                <Grid item lg={12}>
+                                    <Input
+                                        name='title'
+                                        size='small'
+                                        id='outlined-basic'
+                                        variant='outlined'
+                                        fullWidth
+                                        small
+                                    />
+                                </Grid>
+                                <Grid item lg={12} mb={1}>
+                                    <Typography variant='h6'>Department</Typography>
+                                </Grid>
+                                <Grid item lg={12}>
+                                    <Select
+                                        size='small'
+                                        displayEmpty
+                                        name='department'
+                                        onChange={customChangeHandler}
+                                        value={handlers.values.department}
+                                        isError={Boolean(errors.department)}
+                                        error={errors.department}
+                                        renderValue={selected =>
+                                            selected ? departments[selected] : ''
+                                        }
+                                        fullWidth>
+                                        {Object.keys(departments).map((dept, i) => (
+                                            <MenuItem value={dept} key={i} sx={{ px: 1.2 }}>
+                                                {departments[dept]}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </Grid>
+
+                                <Grid item lg={12} mb={1}>
+                                    <Typography variant='h6'>Years of Experience</Typography>
+                                </Grid>
+                                <Grid item lg={12}>
+                                    <Input
+                                        type='number'
+                                        name='experience'
+                                        size='small'
+                                        id='outlined-basic'
+                                        variant='outlined'
+                                        fullWidth
+                                    />
+                                </Grid>
+
+                                <Grid item lg={12} mb={1}>
+                                    <Typography variant='h6'>Location</Typography>
+                                </Grid>
+                                <Grid item lg={12}>
+                                    <Input
+                                        name='location'
+                                        size='small'
+                                        id='outlined-basic'
+                                        variant='outlined'
+                                        fullWidth
+                                    />
+                                </Grid>
+
+                                <Grid item xs={8} mb={1}>
+                                    <Typography variant='h6'>Salary</Typography>
+                                </Grid>
+                                <Grid item xs={4} mb={1}>
+                                    <Typography variant='h6'>Currency</Typography>
+                                </Grid>
+                                <Grid item xs={8}>
+                                    <Input
+                                        type='number'
+                                        name='salary'
+                                        size='small'
+                                        id='outlined-basic'
+                                        variant='outlined'
+                                        fullWidth
+                                    />
+                                </Grid>
+                                <Grid item xs={4}>
+                                    <Input
+                                        name='currency'
+                                        size='small'
+                                        id='outlined-basic'
+                                        variant='outlined'
+                                        fullWidth
+                                    />
+                                </Grid>
+
+                                <Grid item lg={12} mb={1}>
+                                    <Typography variant='h6'>Contract</Typography>
+                                </Grid>
+                                <Grid item lg={12}>
+                                    <Select
+                                        size='small'
+                                        value={handlers.values.jobType}
+                                        fullWidth
+                                        name='jobType'
+                                        onChange={customChangeHandler}>
+                                        <MenuItem value='Part Time'>Part Time</MenuItem>
+                                        <MenuItem value='Full Time'>Full Time</MenuItem>
+                                    </Select>
+                                </Grid>
+
+                                <Grid item lg={12} mb={1}>
+                                    <Typography variant='h6'>Working Location</Typography>
+                                </Grid>
+                                <Grid item lg={12}>
+                                    <Select
+                                        size='small'
+                                        value={handlers.values.remote}
+                                        name='remote'
+                                        fullWidth
+                                        onChange={customChangeHandler}>
+                                        <MenuItem value='true'>Remote</MenuItem>
+                                        <MenuItem value='false'>On Premise</MenuItem>
+                                    </Select>
+                                </Grid>
+
+                                <Grid item lg={12} mb={1}>
+                                    <Typography variant='h6'>Details</Typography>
+                                </Grid>
+                                <Button onClick={addNewDetail}>Add Detail</Button>
+                                {details.map((detail, i) => (
+                                    <Grid container key={i} spacing={2}>
+                                        <Grid item xs>
+                                            {/* <TextField
+                                                // name={'dtitle'}
+                                                size='small'
+                                                id='outlined-basic'
+                                                variant='outlined'
+                                                value={detail.content}
+                                                onChange={e => handleContentChange(e, i)}
+                                                fullWidth
+                                            /> */}
+                                            <Input
+                                        name={'details'+i}
+                                        size='small'
+                                        id='outlined-basic'
+                                        variant='outlined'
+                                        value={detail.content}
+                                        onChange={e => handleContentChange(e, i)}
+                                        fullWidth
+                                    />
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                            <Select
+                                                size='small'
+                                                value={detail.tag}
+                                                fullWidth
+                                                onChange={e => handleTagChange(e, i)}>
+                                                <MenuItem value='h1'>Heading 1</MenuItem>
+                                                <MenuItem value='h2'>Heading 2</MenuItem>
+                                                <MenuItem value='h3'>Heading 3</MenuItem>
+                                                <MenuItem value='h4'>Heading 4</MenuItem>
+                                                <MenuItem value='h5'>Heading 5</MenuItem>
+                                                <MenuItem value='h6'>Heading 6</MenuItem>
+                                                <MenuItem value='p'>Paragraph</MenuItem>
+                                                <MenuItem value='li'>List</MenuItem>
+                                            </Select>
+                                        </Grid>
+                                        <Grid item>
+                                            <IconButton onClick={() => copyDetail(detail, i)}>
+                                                <ContentCopyIcon />
+                                            </IconButton>
+                                            <IconButton onClick={() => removeDetail(detail, i)}>
+                                                <CloseIcon
+                                                    sx={{
+                                                        color: 'error.dark',
+                                                    }}
+                                                />
+                                            </IconButton>
+                                        </Grid>
+                                    </Grid>
+                                ))}
+
+                                <Grid item lg={12}>
+                                    <FormControlLabel
+                                        control={<Checkbox defaultChecked />}
+                                        label='I have read and agree to the Privacy Notice'
+                                    />
+                                </Grid>
+
+                                <Box textAlign='center'>
+                                    <Submit>
+                                        {loader => (
+                                            <Button
+                                                variant='contained'
+                                                type='submit'
+                                                disabled={Boolean(loader)}
+                                                sx={{
+                                                    fontWeight: '500',
+                                                    textTransform: 'capitalize',
+                                                    letterSpacing: '1px',
+                                                }}
+                                                endIcon={loader}>
+                                                {action === 'edit' ? 'Update' : 'Add Job'}
+                                            </Button>
+                                        )}
+                                    </Submit>
+                                </Box>
+                            </Grid>
+                        </Form>
+                    )}
+                </Box>
+            </Container>
+        </Box>
+    );
+}
+
+export default AddJob;

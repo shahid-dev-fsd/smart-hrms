@@ -1,0 +1,64 @@
+/* Subtle shake and rotate for the diamond icon */
+@keyframes diamondShake {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(5deg) scale(1.1); }
+    75% { transform: rotate(-5deg) scale(1.1); }
+}
+
+/* Text rotation animation */
+@keyframes textRotate {
+    0% { transform: rotate(0deg); }
+    50% { transform: rotate(15deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* Sparkles animation: Soft pulse with fade */
+@keyframes sparkle {
+    0% { opacity: 0; transform: scale(0.2); }
+    50% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.4); }
+}
+
+/* Glow effect for the button */
+.button-container:hover {
+    box-shadow: 0 0 15px rgba(106, 17, 203, 0.5), 0 0 25px rgba(37, 117, 252, 0.3);
+    transition: box-shadow 0.4s ease-in-out;
+}
+
+/* Diamond animation trigger */
+.button-container:hover .diamond-icon {
+    animation: diamondShake 0.8s ease-in-out infinite;
+}
+
+/* Sparkle styles */
+.sparkle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: white;
+    border-radius: 50%;
+    animation: sparkle 1.5s ease-in-out infinite;
+    opacity: 0; /* Initially invisible */
+}
+
+/* Each sparkle positioned differently for subtle randomness */
+.sparkle:nth-child(1) { top: -10px; left: 15px; animation-delay: 0s; }
+.sparkle:nth-child(2) { top: 5px; right: 10px; animation-delay: 0.2s; }
+.sparkle:nth-child(3) { bottom: -5px; left: 8px; animation-delay: 0.4s; }
+.sparkle:nth-child(4) { bottom: 10px; right: 20px; animation-delay: 0.6s; }
+.sparkle:nth-child(5) { top: -8px; right: -5px; animation-delay: 0.8s; }
+
+/* Show sparkles when hovering over the button */
+.button-container:hover .sparkle {
+    opacity: 1; /* Make sparkles visible on hover */
+}
+
+/* Button text styles */
+.button-text {
+    transition: transform 0.6s; /* Smooth transition for text rotation */
+}
+
+/* Rotate text when the button is hovered */
+.button-container:hover .button-text {
+    animation: textRotate 0.6s ease-in-out forwards;
+}

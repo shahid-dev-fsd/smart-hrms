@@ -1,0 +1,46 @@
+/* Override react-calendar's default white background */
+.custom-calendar {
+    background-color: #121212; /* Dark background to match your design */
+    color: white; /* Default text color */
+    border: none;
+  }
+  
+  /* Override the day tiles to match the dark theme */
+  .custom-calendar .react-calendar__tile {
+    background-color: transparent; /* Make tile background transparent */
+    color: white;
+    border-radius: 50%; /* Add border radius if you want circular day tiles */
+    padding: 10px;
+  }
+  
+  /* Highlight the selected day with the specific design */
+  .custom-calendar .react-calendar__tile--active {
+    background-color: #3767B1 !important; /* Blue background for the selected date */
+    color: white !important;
+    border-radius: 50%;
+  }
+  
+  /* Optional: Add hover effects for better interactivity */
+  .custom-calendar .react-calendar__tile:hover {
+    background-color: rgba(55, 103, 177, 0.3); /* Lighter hover effect */
+    color: white;
+  }
+  
+  /* Optional: Styling for today's date */
+  .custom-calendar .react-calendar__tile--now {
+    background-color: rgba(55, 103, 177, 0.2); /* Light blue for today */
+    border-radius: 50%;
+    color: white;
+  }
+  
+  /* Optional: Weekday labels (Mon, Tue, etc.) */
+  .custom-calendar .react-calendar__month-view__weekdays {
+    color: white;
+  }
+  
+  /* Optional: Styling for navigation arrows */
+  .custom-calendar .react-calendar__navigation button {
+    color: white; /* White arrows for navigation */
+    background: none; /* No background */
+  }
+  

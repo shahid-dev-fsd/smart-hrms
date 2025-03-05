@@ -1,0 +1,21 @@
+.arrow-button {
+    color: blue;
+    border: none;
+    cursor: pointer;
+    margin-left: 5px;
+    padding: 10px 8px; 
+    }
+  .content{
+    margin-top: 10px;
+    color: #898585;
+    
+    
+    
+  
+  }
+  
+  .row8{
+    grid-column: span;
+    padding-top: 50px;
+    
+  }
